@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }} - AuroraMart</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #f5f5f5;
+        }
+        header {
+            background: white;
+            color: #667eea;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .logo a, .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+        }
+        .product-info h1 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .product-info .price {
+            font-size: 36px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .product-info .description {
+            color: #666;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .product-info .stock {
+            font-weight: bold;
+            color: {% if product.stock > 0 %}#4caf50{% else %}#f44336{% endif %};
+            margin: 10px 0;
+        }
+        .product-info .rating {
+            color: #ffc107;
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        .add-to-cart {
+            margin-top: 30px;
+        }
+        .add-to-cart form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .add-to-cart input {
+            padding: 12px;
+            width: 100px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .add-to-cart button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .recommendations {
+            margin-top: 60px;
+        }
+        .recommendations h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .product-image-small {
+            height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        .product-info-small {
+            padding: 15px;
+        }
+        .product-name-small {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .product-price-small {
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{% url 'storefront:index' %}">
+                    {% load static %}
+                    <img src="{% static 'img/auroramart_logo.png' %}" alt="AuroraMart" style="height: 40px; vertical-align: middle; margin-right: 10px;">
+                    AuroraMart
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="{% url 'storefront:index' %}">Home</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'storefront:cart' %}">Cart</a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                {% else %}
+                    📦
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                <div class="price">${{ product.price }}</div>
+                {% if product.rating %}
+                <div class="rating">⭐ {{ product.rating }}</div>
+                {% endif %}
+                <div class="stock">
+                    {% if product.stock > 0 %}
+                        ✅ In Stock ({{ product.stock }} available)
+                    {% else %}
+                        ❌ Out of Stock
+                    {% endif %}
+                </div>
+                <div class="description">
+                    <strong>Category:</strong> {{ product.category }}<br>
+                    {{ product.description }}
+                </div>
+                
+                {% if user.is_authenticated %}
+                <div class="add-to-cart">
+                    <form method="post" action="{% url 'storefront:add_to_cart' product.id %}">
+                        {% csrf_token %}
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.stock }}" required>
+                        <button type="submit">Add to Cart</button>
+                    </form>
+                </div>
+                {% else %}
+                <p><a href="{% url 'accounts:login' %}">Login to add to cart</a></p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if recommendations %}
+        <div class="recommendations">
+            <h2>You might also like</h2>
+            <div class="products-grid">
+                {% for rec in recommendations %}
+                <div class="product-card">
+                    <a href="{% url 'storefront:product_detail' rec.id %}">
+                            <div class="product-image-small">
+                                {% if rec.image %}
+                                    <img src="{{ rec.image.url }}" alt="{{ rec.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    📦
+                                {% endif %}
+                            </div>
+                        <div class="product-info-small">
+                            <div class="product-name-small">{{ rec.name }}</div>
+                            <div class="product-price-small">${{ rec.price }}</div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Floating Cart -->
+    {% if user.is_authenticated %}
+    <div id="floating-cart" onclick="window.location.href='{% url 'storefront:cart' %}'" style="position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: transform 0.3s; z-index: 999;">
+        <span style="font-size: 28px;">🛒</span>
+        <span class="cart-count" style="font-size: 12px; background: #ff4444; padding: 2px 8px; border-radius: 10px; margin-top: -5px; font-weight: bold;">{{ cart_count|default:0 }}</span>
+    </div>
+    {% endif %}
+</body>
+</html>
