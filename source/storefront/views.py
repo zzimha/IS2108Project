@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .models import Product, Customer, Cart, CartItem, Order, OrderItem, Favorite
 from django.contrib.auth.models import User
 from decimal import Decimal
 import joblib
 import os
+import json
 from django.conf import settings
 
 # Load ML models
@@ -25,11 +27,61 @@ except Exception as e:
     print(f"Warning: Could not load ML models: {e}")
 
 def index(request):
-    """Home page showing featured products"""
-    # Use the 6 specific products that have images uploaded
-    # Product IDs: 189, 74, 110, 148, 111, 134
-    featured_product_ids = [189, 74, 110, 148, 111, 134]
-    featured_products = Product.objects.filter(id__in=featured_product_ids, stock__gt=0)
+    """Home page showing featured products - personalized based on user profile"""
+    # Clear any old messages when loading the homepage
+    storage = messages.get_messages(request)
+    storage.used = True
+    
+    # Default featured products (Product IDs: 189, 74, 110, 148, 111, 134)
+    default_featured_product_ids = [189, 74, 110, 148, 111, 134]
+    
+    featured_products = None
+    is_personalized = False
+    
+    # If user is logged in and has profile, show personalized products
+    if request.user.is_authenticated:
+        try:
+            customer = Customer.objects.get(user=request.user)
+            
+            # Check if customer has required profile data (age and gender)
+            if customer.age and customer.gender and customer.gender != 'P':
+                # Map income range to numeric value
+                income_map = {
+                    'Below 30k': 1,
+                    '30k-60k': 2,
+                    '60k-100k': 3,
+                    'Above 100k': 3,
+                }
+                income_level = income_map.get(customer.income_range, 2)
+                
+                # Map gender to numeric (0 = Male, 1 = Female)
+                gender_numeric = 1 if customer.gender == 'F' else 0
+                
+                # Predict category using Decision Tree model
+                predicted_category = None
+                if decision_tree_model is not None:
+                    try:
+                        features = [[customer.age, gender_numeric, income_level]]
+                        predicted_category = decision_tree_model.predict(features)[0]
+                    except Exception as e:
+                        print(f"Error predicting category: {e}")
+                
+                # If prediction successful, get products from that category
+                if predicted_category:
+                    # Get products from predicted category (only with images)
+                    featured_products = Product.objects.filter(
+                        category__icontains=predicted_category,
+                        stock__gt=0
+                    ).exclude(image='').order_by('-rating')[:6]
+                    
+                    if featured_products:
+                        is_personalized = True
+        except Customer.DoesNotExist:
+            pass
+    
+    # Fall back to default featured products if no personalized products
+    if not featured_products:
+        featured_products = Product.objects.filter(id__in=default_featured_product_ids, stock__gt=0)
     
     # Show only 3 categories on home page
     categories = ['Beauty & Personal Care', 'Home & Kitchen', 'Fashion']
@@ -48,6 +100,7 @@ def index(request):
         'featured_products': featured_products,
         'categories': categories,
         'cart_count': cart_count,
+        'is_personalized': is_personalized,
     }
     return render(request, 'storefront/index.html', context)
 
@@ -506,4 +559,43 @@ def favorites(request):
         'favorite_products': favorite_products,
     }
     return render(request, 'storefront/favorites.html', context)
+
+@csrf_exempt
+def aurabot_reply(request):
+    """Handle chatbot replies"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_input = data.get("message", "")
+            
+            # Simple rule-based responses (no OpenAI for now to avoid API keys)
+            responses = {
+                "hello": "Hello! I'm AuroBot, your friendly assistant at AuroraMart! How can I help you today?",
+                "hi": "Hi there! Welcome to AuroraMart! What can I help you with?",
+                "products": "We have a wide range of products! Check out our categories: Beauty & Personal Care, Home & Kitchen, Fashion, Electronics, and more!",
+                "order": "To place an order, simply add items to your cart and proceed to checkout. We offer free delivery on orders over $150!",
+                "shipping": "We offer fast shipping! Standard delivery is $4.99, and it's FREE for orders over $150!",
+                "help": "I can help you with product information, orders, shipping, promotions, and more. Just ask me anything!",
+                "price": "Great news! We have many products on sale right now with fantastic discounts. Check out our featured products!",
+                "no that's all": "Hope AuroBot could help! Shop Bright and happy shopping! 🌟",
+            }
+            
+            user_lower = user_input.lower()
+            reply = f"I understand you're asking about '{user_input}'. At AuroraMart, we're here to help! Visit our product pages for detailed information, or contact our support team for specific inquiries. Is there anything else I can help you with?"
+            
+            # Check for keywords (check "no thanks" responses first)
+            if "no" in user_lower and ("thanks" in user_lower or "thank" in user_lower):
+                reply = "Hope AuroBot could help! Shop Bright and happy shopping! 🌟"
+            else:
+                # Check for other keywords
+                for key, response in responses.items():
+                    if key in user_lower:
+                        reply = response
+                        break
+            
+            return JsonResponse({"reply": reply})
+        except Exception as e:
+            return JsonResponse({"reply": "I'm having trouble understanding that. Could you please rephrase?"})
+    
+    return JsonResponse({"reply": "Please send a POST request with a message."})
 

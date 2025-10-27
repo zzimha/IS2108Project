@@ -60,6 +60,10 @@ def register(request):
     return render(request, 'accounts/register.html')
 
 def login_view(request):
+    # Clear any old messages when loading the login page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -95,6 +99,10 @@ def profile(request):
 @login_required
 def edit_profile(request):
     """Edit profile view"""
+    # Clear any old messages when loading the edit profile page (always)
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     customer = getattr(request.user, 'customer', None)
     
     # Ensure customer object exists
@@ -127,10 +135,6 @@ def edit_profile(request):
             customer.save()
         
         return redirect('accounts:profile')
-    
-    # Clear any old messages when loading the edit profile page (GET request only)
-    storage = messages.get_messages(request)
-    storage.used = True
     
     return render(request, 'accounts/edit_profile.html', {'customer': customer})
 

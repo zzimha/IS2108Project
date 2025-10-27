@@ -18,4 +18,5 @@ urlpatterns = [
     path('order/<int:order_id>/', views.order_confirmation, name='order_confirmation'),
     path('favorites/', views.favorites, name='favorites'),
     path('favorites/toggle/<int:product_id>/', views.toggle_favorite, name='toggle_favorite'),
+    path('aurabot/', views.aurabot_reply, name='aurabot_reply'),
 ]

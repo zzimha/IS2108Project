@@ -59,10 +59,28 @@
             transition: all 0.3s ease;
             font-weight: 600;
             display: inline-block;
+            position: relative;
         }
         .nav-links a:hover {
             background: rgba(102, 126, 234, 0.1);
             transform: translateY(-2px);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -2px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         @media (max-width: 768px) {
             .nav-links {
@@ -526,7 +544,12 @@
                 <a href="{% url 'storefront:category_list' %}">Categories</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'storefront:favorites' %}">Favorites</a>
-                    <a href="{% url 'storefront:cart' %}">Cart</a>
+                    <a href="{% url 'storefront:cart' %}">
+                        Cart
+                        {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
                     <a href="{% url 'accounts:profile' %}">My Profile</a>
                     <a href="{% url 'accounts:logout' %}">Logout</a>
                 {% else %}
@@ -563,6 +586,11 @@
         </div>
 
         <h2 class="section-title">Featured Products</h2>
+        {% if is_personalized %}
+        <p style="text-align: center; margin: -10px 0 20px 0; color: #667eea; font-weight: 600; font-size: 16px;">
+            🤖 Personalized for you based on your profile
+        </p>
+        {% endif %}
         <div class="products-grid">
             {% for product in featured_products %}
             <div class="product-card">
@@ -604,47 +632,6 @@
         </div>
     </div>
 
-    <!-- Floating Cart Icon -->
-    {% if user.is_authenticated %}
-    <div id="floating-cart" onclick="window.location.href='{% url 'storefront:cart' %}'">
-        <span class="cart-icon">🛒</span>
-        <span class="cart-count">{{ cart_count|default:0 }}</span>
-    </div>
-    <style>
-        #floating-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: transform 0.3s;
-            z-index: 1000;
-        }
-        #floating-cart:hover {
-            transform: scale(1.1);
-        }
-        .cart-icon {
-            font-size: 28px;
-        }
-        .cart-count {
-            font-size: 12px;
-            background: #ff4444;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-top: -5px;
-            font-weight: bold;
-        }
-    </style>
-    {% endif %}
 
     <footer>
         <p>&copy; 2025 AuroraMart. All rights reserved.</p>
@@ -682,5 +669,8 @@
             }
         });
     </script>
+
+    <!-- AuroBot Chat Widget -->
+    {% include 'storefront/chatbox.html' %}
 </body>
 </html>
