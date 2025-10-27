@@ -263,7 +263,7 @@ def product_detail(request, product_id):
             # Find products in same category or get top rated products (only with images)
             recommendations = Product.objects.filter(
                 category=product.category
-            ).exclude(id=product.id).filter(stock__gt=0).exclude(image='')[:4]
+            ).exclude(id=product.id).filter(stock__gt=0).exclude(image='')[:3]
         except:
             pass
     
