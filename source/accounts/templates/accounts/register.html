@@ -134,14 +134,6 @@
         </div>
         <p class="subtitle">✨ Join AuroraMart today!<br>Create an account and enjoy faster checkout, curated deals, and smart suggestions.</p>
         
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
         <form method="post">
             {% csrf_token %}
             <label for="username">Username</label>

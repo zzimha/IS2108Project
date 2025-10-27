@@ -6,6 +6,10 @@ from django.contrib.auth.models import User
 from storefront.models import Customer
 
 def register(request):
+    # Clear any old messages when loading the registration page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
