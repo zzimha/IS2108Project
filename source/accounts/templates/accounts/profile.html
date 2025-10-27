@@ -216,7 +216,6 @@
                     {% endif %}
                     <p><strong>Gender:</strong> {% if customer.gender %}{{ customer.get_gender_display }}{% else %}Prefer not to say{% endif %}</p>
                     <p><strong>Employment Status:</strong> {{ customer.employment_status }}</p>
-                    <p><strong>Income Range:</strong> {{ customer.income_range }}</p>
                     {% if customer.preferred_category %}
                     <p><strong>Preferred Category:</strong> {{ customer.preferred_category }}</p>
                     {% endif %}

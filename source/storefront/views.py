@@ -121,6 +121,10 @@ def onboarding(request):
 
 def category_list(request):
     """List all product categories"""
+    # Clear any old messages when loading the category list page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     # Show 10 specific categories with product counts
     category_names = [
         'Beauty & Personal Care',
@@ -148,6 +152,10 @@ def category_list(request):
 
 def category_products(request, category_name):
     """Show products in a specific category"""
+    # Clear any old messages when loading the category products page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     # Featured product IDs to prioritize
     featured_product_ids = [189, 74, 110, 148, 111, 134]
     
@@ -242,6 +250,10 @@ def category_products(request, category_name):
 
 def product_detail(request, product_id):
     """Show detailed view of a product"""
+    # Clear any old messages when loading the product detail page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     product = get_object_or_404(Product, id=product_id)
     
     # Get "frequently bought together" recommendations using association rules
@@ -305,6 +317,10 @@ def add_to_cart(request, product_id):
 @login_required
 def cart(request):
     """View shopping cart"""
+    # Clear any old messages when loading the cart page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     customer = get_or_create_customer(request.user)
     cart = get_or_create_cart(customer)
     cart_items = cart.items.all()
@@ -478,6 +494,10 @@ def toggle_favorite(request, product_id):
 @login_required
 def favorites(request):
     """Display user's favorite products"""
+    # Clear any old messages when loading the favorites page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     favorite_products = Product.objects.filter(
         favorited_by__user=request.user
     ).distinct()
