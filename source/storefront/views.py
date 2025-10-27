@@ -225,19 +225,21 @@ def category_products(request, category_name):
         else:
             products_query = products_query.order_by('-rating')
         
-        products = list(products_query[:max_products])
+        # Get products and convert to list
+        products = list(products_query)
+        # Limit to max_products
+        products = products[:max_products]
     
     # Get association rule recommendations
     recommendations = []
-    if association_rules is not None and hasattr(association_rules, 'columns'):
-        try:
-            # Get top 3 recommendations for this category (only with images)
-            recommendations = Product.objects.filter(
-                category__icontains=category_name,
-                stock__gt=0
-            ).exclude(id__in=[p.id for p in products]).exclude(image='').order_by('-rating')[:3]
-        except:
-            pass
+    try:
+        # Get top 3 recommendations for this category (only with images)
+        recommendations = list(Product.objects.filter(
+            category__icontains=category_name,
+            stock__gt=0
+        ).exclude(id__in=[p.id for p in products]).exclude(image='').order_by('-rating'))[:3]
+    except:
+        pass
     
     context = {
         'category': category_name,
