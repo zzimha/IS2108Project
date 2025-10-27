@@ -258,14 +258,13 @@ def product_detail(request, product_id):
     
     # Get "frequently bought together" recommendations using association rules
     recommendations = []
-    if association_rules is not None:
-        try:
-            # Find products in same category or get top rated products (only with images)
-            recommendations = Product.objects.filter(
-                category=product.category
-            ).exclude(id=product.id).filter(stock__gt=0).exclude(image='')[:3]
-        except:
-            pass
+    try:
+        # Find products in same category or get top rated products (only with images)
+        recommendations = Product.objects.filter(
+            category=product.category
+        ).exclude(id=product.id).filter(stock__gt=0).exclude(image='')[:3]
+    except:
+        pass
     
     # Get cart count if user is logged in
     cart_count = 0
@@ -382,19 +381,18 @@ def checkout(request):
     
     # Get recommendations based on association rules - limit to 3 (only with images)
     recommendations = []
-    if association_rules is not None:
-        try:
-            # Get categories of products in cart
-            cart_categories = set(item.product.category for item in cart_items)
-            
-            # Find products in similar or complementary categories (only with images)
-            recommendations = Product.objects.filter(
-                category__in=cart_categories
-            ).exclude(
-                id__in=[item.product.id for item in cart_items]
-            ).filter(stock__gt=0).exclude(image='').order_by('-rating')[:3]
-        except Exception as e:
-            print(f"Error getting recommendations: {e}")
+    try:
+        # Get categories of products in cart
+        cart_categories = set(item.product.category for item in cart_items)
+        
+        # Find products in similar or complementary categories (only with images)
+        recommendations = Product.objects.filter(
+            category__in=cart_categories
+        ).exclude(
+            id__in=[item.product.id for item in cart_items]
+        ).filter(stock__gt=0).exclude(image='').order_by('-rating')[:3]
+    except Exception as e:
+        print(f"Error getting recommendations: {e}")
     
     context = {
         'cart_items': cart_items,
