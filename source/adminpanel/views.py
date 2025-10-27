@@ -13,6 +13,10 @@ def is_admin(user):
 @user_passes_test(is_admin)
 def dashboard(request):
     """Admin dashboard showing overview"""
+    # Clear any old messages when loading admin views
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     total_products = Product.objects.count()
     low_stock_products = Product.objects.filter(stock__lte=F('reorder_threshold')).count()
     total_customers = Customer.objects.count()
@@ -35,6 +39,10 @@ def dashboard(request):
 @user_passes_test(is_admin)
 def product_management(request):
     """Manage products list"""
+    # Clear any old messages when loading admin views
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     search_query = request.GET.get('search', '')
     category_filter = request.GET.get('category', '')
     
@@ -86,6 +94,10 @@ def product_edit(request, product_id):
 @user_passes_test(is_admin)
 def stock_management(request):
     """Manage stock levels"""
+    # Clear any old messages when loading admin views
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     # Get products with low stock
     products = Product.objects.filter(stock__lte=F('reorder_threshold')).order_by('stock')
     
@@ -107,6 +119,10 @@ def stock_management(request):
 @user_passes_test(is_admin)
 def customer_list(request):
     """List all customers"""
+    # Clear any old messages when loading admin views
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     search_query = request.GET.get('search', '')
     
     customers = Customer.objects.select_related('user').all()

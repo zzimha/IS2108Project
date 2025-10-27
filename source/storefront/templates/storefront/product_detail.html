@@ -42,11 +42,31 @@
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .logo a:hover, .nav-links a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
         }
         .nav-links {
             display: flex;
             gap: 30px;
             align-items: center;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 15px;
+            }
+            .logo a, .nav-links a {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            .logo {
+                font-size: 22px;
+            }
         }
         .logo {
             font-size: 28px;
@@ -77,7 +97,7 @@
             font-size: 120px;
         }
         .product-info h1 {
-            font-size: 48px;
+            font-size: 24px;
             font-weight: 700;
             color: #333;
             margin-bottom: 15px;
@@ -89,15 +109,95 @@
             font-weight: bold;
             margin: 15px 0;
         }
+        .price-info {
+            margin: 15px 0;
+        }
+        .price-original {
+            font-size: 24px;
+            color: #999;
+            text-decoration: line-through;
+            margin-bottom: 5px;
+        }
+        .price-sale {
+            font-size: 36px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .discount-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
         .product-info .description {
             color: #666;
             line-height: 1.6;
             margin: 20px 0;
         }
         .product-info .stock {
-            font-weight: bold;
-            color: {% if product.stock > 0 %}#4caf50{% else %}#f44336{% endif %};
+            font-weight: 600;
             margin: 10px 0;
+            font-size: 16px;
+        }
+        .stock-in {
+            color: #27ae60;
+        }
+        .stock-low {
+            color: #f39c12;
+        }
+        .stock-out {
+            color: #e74c3c;
+        }
+        .favorite-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .favorite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .favorite-btn.active {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .notify-checkbox {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .notify-checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .notify-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .favorite-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
         }
         .product-info .rating {
             color: #ffc107;
@@ -109,8 +209,9 @@
         }
         .add-to-cart form {
             display: flex;
+            flex-direction: column;
             gap: 15px;
-            align-items: center;
+            align-items: flex-start;
         }
         .add-to-cart input {
             padding: 12px;
@@ -128,6 +229,19 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .add-to-cart button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        @media (max-width: 768px) {
+            .add-to-cart button {
+                width: 100%;
+            }
+            .product-info h1 {
+                font-size: 18px;
+            }
         }
         .recommendations {
             margin-top: 60px;
@@ -190,7 +304,9 @@
             </div>
             <div class="nav-links">
                 <a href="{% url 'storefront:index' %}">Home</a>
+                <a href="{% url 'storefront:category_products' product.category %}">← Back to {{ product.category }}</a>
                 {% if user.is_authenticated %}
+                    <a href="{% url 'storefront:favorites' %}">Favorites</a>
                     <a href="{% url 'storefront:cart' %}">Cart</a>
                 {% else %}
                     <a href="{% url 'accounts:login' %}">Login</a>
@@ -199,7 +315,9 @@
         </nav>
     </header>
 
-    <div class="container">
+    <button class="theme-toggle-btn" onclick="toggleChristmasTheme()">🎄 Christmas Mode 🎄</button>
+
+    <div class="container" id="mainContainer">
         <div class="product-detail">
             <div class="product-image">
                 {% if product.image %}
@@ -210,15 +328,25 @@
             </div>
             <div class="product-info">
                 <h1>{{ product.name }}</h1>
-                <div class="price">${{ product.price }}</div>
+                {% if product.is_on_sale %}
+                <div class="price-info">
+                    <div class="price-original">SGD ${{ product.original_price }}</div>
+                    <div class="price-sale">SGD ${{ product.price }}</div>
+                    <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+                </div>
+                {% else %}
+                <div class="price">SGD ${{ product.price }}</div>
+                {% endif %}
                 {% if product.rating %}
                 <div class="rating">⭐ {{ product.rating }}</div>
                 {% endif %}
-                <div class="stock">
-                    {% if product.stock > 0 %}
-                        ✅ In Stock ({{ product.stock }} available)
-                    {% else %}
+                <div class="stock {% if product.stock == 0 %}stock-out{% elif product.stock < 10 %}stock-low{% else %}stock-in{% endif %}">
+                    {% if product.stock == 0 %}
                         ❌ Out of Stock
+                    {% elif product.stock < 10 %}
+                        ⚠️ Low Stock ({{ product.stock }} left)
+                    {% else %}
+                        ✅ In Stock ({{ product.stock }} available)
                     {% endif %}
                 </div>
                 <div class="description">
@@ -227,6 +355,21 @@
                 </div>
                 
                 {% if user.is_authenticated %}
+                <button class="favorite-btn {% if is_favorite %}active{% endif %}" onclick="toggleFavorite()" id="favoriteBtn">
+                    <span id="heartIcon">{% if is_favorite %}❤️{% else %}🤍{% endif %}</span>
+                    <span id="favoriteText">{% if is_favorite %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
+                </button>
+                
+                {% if product.stock == 0 %}
+                <div class="notify-checkbox">
+                    <label>
+                        <input type="checkbox" id="notifyCheckbox" onclick="updateNotifyStatus()">
+                        <span>📧 Notify me when this product is back in stock</span>
+                    </label>
+                </div>
+                {% endif %}
+                
+                {% if product.stock > 0 %}
                 <div class="add-to-cart">
                     <form method="post" action="{% url 'storefront:add_to_cart' product.id %}">
                         {% csrf_token %}
@@ -235,6 +378,7 @@
                         <button type="submit">Add to Cart</button>
                     </form>
                 </div>
+                {% endif %}
                 {% else %}
                 <p><a href="{% url 'accounts:login' %}">Login to add to cart</a></p>
                 {% endif %}
@@ -257,7 +401,7 @@
                             </div>
                         <div class="product-info-small">
                             <div class="product-name-small">{{ rec.name }}</div>
-                            <div class="product-price-small">${{ rec.price }}</div>
+                            <div class="product-price-small">SGD ${{ rec.price }}</div>
                         </div>
                     </a>
                 </div>
@@ -269,10 +413,125 @@
     
     <!-- Floating Cart -->
     {% if user.is_authenticated %}
-    <div id="floating-cart" onclick="window.location.href='{% url 'storefront:cart' %}'" style="position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: transform 0.3s; z-index: 999;">
+    <div id="floating-cart" onclick="window.location.href='{% url 'storefront:cart' %}'" style="position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s ease; z-index: 999;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
         <span style="font-size: 28px;">🛒</span>
         <span class="cart-count" style="font-size: 12px; background: #ff4444; padding: 2px 8px; border-radius: 10px; margin-top: -5px; font-weight: bold;">{{ cart_count|default:0 }}</span>
     </div>
+    <style>
+        @media (max-width: 768px) {
+            #floating-cart {
+                width: 60px !important;
+                height: 60px !important;
+                bottom: 20px !important;
+                right: 20px !important;
+            }
+            #floating-cart span {
+                font-size: 22px !important;
+            }
+        }
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #c0392b, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .theme-toggle-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        /* Christmas Theme */
+        .container.christmas-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #16a085 50%, #27ae60 100%);
+        }
+        .container.christmas-theme .product-detail {
+            border: 3px solid #c0392b;
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.3);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle-btn {
+                bottom: 20px;
+                left: 20px;
+                padding: 10px 18px;
+                font-size: 12px;
+            }
+        }
+    </style>
     {% endif %}
+    
+    <script>
+        function toggleFavorite() {
+            fetch("{% url 'storefront:toggle_favorite' product.id %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const btn = document.getElementById('favoriteBtn');
+                const icon = document.getElementById('heartIcon');
+                const text = document.getElementById('favoriteText');
+                
+                if (data.is_favorite) {
+                    btn.classList.add('active');
+                    icon.textContent = '❤️';
+                    text.textContent = 'Remove from Favorites';
+                } else {
+                    btn.classList.remove('active');
+                    icon.textContent = '🤍';
+                    text.textContent = 'Add to Favorites';
+                }
+            });
+        }
+        
+        function updateNotifyStatus() {
+            const checkbox = document.getElementById('notifyCheckbox');
+            // This would update the notify_when_available field in Favorite model
+            // For now, just log the status
+            console.log('Notify when available:', checkbox.checked);
+        }
+
+        function toggleChristmasTheme() {
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (!container) return;
+            
+            container.classList.toggle('christmas-theme');
+            
+            if (container.classList.contains('christmas-theme')) {
+                localStorage.setItem('christmasTheme', 'enabled');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            } else {
+                localStorage.setItem('christmasTheme', 'disabled');
+                button.textContent = '🎄 Christmas Mode 🎄';
+                button.style.background = 'linear-gradient(135deg, #c0392b, #27ae60)';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('christmasTheme');
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (theme === 'enabled' && container && button) {
+                container.classList.add('christmas-theme');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            }
+        });
+    </script>
 </body>
 </html>

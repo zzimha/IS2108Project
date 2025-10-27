@@ -35,58 +35,166 @@
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
-        .container {
-            max-width: 1200px;
+        nav a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 15px;
+            }
+            nav a {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+        }
+        .category-wrap {
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 32px 16px;
         }
-        h1 {
-            font-size: 48px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 30px;
+        .page-head {
             text-align: center;
-            text-transform: uppercase;
+            margin: 8px 0 24px;
         }
-        .categories-grid {
+        .page-title {
+            font: 700 32px/1.15 'Poppins', sans-serif;
+            letter-spacing: .3px;
+        }
+        .breadcrumb {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 6px;
+            font: 500 14px/1.2 'Poppins', sans-serif;
+            color: #6f6f78;
+        }
+        .breadcrumb a {
+            color: #5a49c9;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        @media (max-width: 1024px) {
+            .category-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 680px) {
+            .category-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
         }
         .category-card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #fff;
+            border: 1px solid #e9e9ee;
+            border-radius: 14px;
+            min-height: 96px;
+            padding: 18px 20px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, .06);
+            color: #222;
+            text-decoration: none;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
         }
         .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, .18);
+            border-color: #6c5ce7;
         }
-        .category-card a {
-            text-decoration: none;
-            color: #333;
-            font-size: 20px;
-            font-weight: 600;
+        .category-card:focus-visible {
+            outline: 3px solid #6c5ce7;
+            outline-offset: 3px;
         }
-        .btn {
-            margin-top: 20px;
+        .category-name {
+            font: 600 22px/1.3 'Poppins', sans-serif;
             text-align: center;
         }
-        .btn a {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #c0392b, #27ae60);
             color: white;
-            padding: 14px 28px;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
             font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .theme-toggle-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        /* Christmas Theme Styles */
+        .category-wrap.christmas-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #16a085 50%, #27ae60 100%);
+            padding: 32px 16px;
+            border-radius: 15px;
+            transition: all 0.5s ease;
+        }
+        .category-wrap.christmas-theme .page-head {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #c0392b;
+        }
+        .category-wrap.christmas-theme .category-grid {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #27ae60;
+        }
+        .category-wrap.christmas-theme .category-card {
+            border: 2px solid #27ae60;
+        }
+        .category-wrap.christmas-theme .category-card:hover {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            transform: scale(1.05);
+            border-color: #c0392b;
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.3);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle-btn {
+                bottom: 20px;
+                left: 20px;
+                padding: 10px 18px;
+                font-size: 12px;
+            }
+        }
+        .category-count {
+            background: #f4f3ff;
+            color: #5a49c9;
+            border: 1px solid #e5e2ff;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font: 700 12px/1 'Poppins', sans-serif;
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            color: #fff;
             font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #6c5ce7, #5a49c9);
         }
     </style>
 </head>
@@ -97,20 +205,58 @@
         </nav>
     </header>
 
-    <div class="container">
-        <h1>Browse by Category</h1>
-        
-        <div class="categories-grid">
-            {% for category in categories %}
-            <div class="category-card">
-                <a href="{% url 'storefront:category_products' category_name=category %}">{{ category }}</a>
+    <button class="theme-toggle-btn" onclick="toggleChristmasTheme()">🎄 Christmas Mode 🎄</button>
+
+    <div class="category-wrap" id="mainContainer">
+        <div class="page-head">
+            <h1 class="page-title">Browse by Category</h1>
+            <div class="breadcrumb">
+                <a href="{% url 'storefront:index' %}">Home</a>
+                <span>/</span>
+                <span>Categories</span>
             </div>
+        </div>
+        
+        <div class="category-grid">
+            {% for category in categories %}
+            <a href="{% url 'storefront:category_products' category_name=category.name %}" class="category-card">
+                <div class="category-name">{{ category.name }}</div>
+            </a>
             {% endfor %}
         </div>
-        
-        <div class="btn">
-            <a href="{% url 'storefront:index' %}">← Back to Home</a>
-        </div>
     </div>
+
+    <script>
+        function toggleChristmasTheme() {
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (!container) return;
+            
+            container.classList.toggle('christmas-theme');
+            
+            if (container.classList.contains('christmas-theme')) {
+                localStorage.setItem('christmasTheme', 'enabled');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            } else {
+                localStorage.setItem('christmasTheme', 'disabled');
+                button.textContent = '🎄 Christmas Mode 🎄';
+                button.style.background = 'linear-gradient(135deg, #c0392b, #27ae60)';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('christmasTheme');
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (theme === 'enabled' && container && button) {
+                container.classList.add('christmas-theme');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            }
+        });
+    </script>
 </body>
 </html>

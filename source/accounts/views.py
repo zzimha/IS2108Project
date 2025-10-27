@@ -53,6 +53,10 @@ def register(request):
         messages.success(request, 'Registration successful!')
         return redirect('accounts:login')
     
+    # Clear any old messages when loading the registration page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     return render(request, 'accounts/register.html')
 
 def login_view(request):
@@ -71,6 +75,10 @@ def login_view(request):
 
 @login_required
 def profile(request):
+    # Clear any old messages when loading the profile page
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     customer = getattr(request.user, 'customer', None)
     
     # Ensure customer object exists
@@ -97,6 +105,10 @@ def edit_profile(request):
             employment_status='Employed',
             income_range='Below 30k'
         )
+    
+    # Clear any old messages when loading the edit profile page
+    storage = messages.get_messages(request)
+    storage.used = True
     
     if request.method == 'POST':
         if customer:
@@ -128,6 +140,10 @@ def edit_profile(request):
 
 def logout_view(request):
     """Logout user"""
+    # Clear all existing messages before logging out
+    storage = messages.get_messages(request)
+    storage.used = True
+    
     logout(request)
-    messages.success(request, 'You have been logged out.')
+    # Don't show any message on logout - let the user be redirected cleanly
     return redirect('storefront:index')

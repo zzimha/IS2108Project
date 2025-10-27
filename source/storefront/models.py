@@ -14,9 +14,25 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Promotional fields
+    is_on_sale = models.BooleanField(default=False)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discount_percentage = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+    def get_current_price(self):
+        """Return current price (discounted if on sale)"""
+        return self.price
+    
+    def get_discount_percentage(self):
+        """Calculate discount percentage"""
+        if self.is_on_sale and self.original_price:
+            discount = ((self.original_price - self.price) / self.original_price) * 100
+            return int(discount)
+        return self.discount_percentage or 0
 
     class Meta:
         ordering = ['-created_at']
@@ -118,3 +134,18 @@ class OrderItem(models.Model):
 
     def get_total(self):
         return self.price * self.quantity
+
+
+class Favorite(models.Model):
+    """User favorites for products"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    notify_when_available = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"

@@ -30,11 +30,31 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
         }
         nav a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        nav a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            nav {
+                gap: 15px;
+            }
+            nav a {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
         }
         .container {
             max-width: 1200px;
@@ -42,11 +62,12 @@
             padding: 40px 20px;
         }
         h1 {
-            font-size: 48px;
+            font-size: 24px;
             font-weight: 700;
             color: #333;
             margin-bottom: 30px;
             text-transform: uppercase;
+            text-align: center;
         }
         .products-grid {
             display: grid;
@@ -58,7 +79,7 @@
                 grid-template-columns: repeat(2, 1fr);
             }
             h1 {
-                font-size: 36px;
+                font-size: 20px;
             }
         }
         .product-card {
@@ -103,26 +124,200 @@
             color: #ffc107;
             margin-top: 5px;
         }
+        .product-card {
+            position: relative;
+        }
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 10;
+            font-family: 'Poppins', sans-serif;
+        }
+        .product-price-sale {
+            color: #e74c3c;
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .product-price-original {
+            color: #999;
+            text-decoration: line-through;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+        .product-rating-discount {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            gap: 10px;
+        }
+        .product-discount-info {
+            font-size: 14px;
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .search-filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            padding-left: 45px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+        .sort-dropdown {
+            min-width: 200px;
+        }
+        .sort-dropdown select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+        .sort-dropdown select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #c0392b, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .theme-toggle-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        /* Christmas Theme */
+        .container.christmas-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #16a085 50%, #27ae60 100%);
+        }
+        .container.christmas-theme .products-grid {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .container.christmas-theme .product-card {
+            border: 2px solid #ffebee;
+        }
+        .container.christmas-theme .product-card:hover {
+            border-color: #c0392b;
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.3);
+        }
+        @media (max-width: 768px) {
+            .theme-toggle-btn {
+                bottom: 20px;
+                left: 20px;
+                padding: 10px 18px;
+                font-size: 12px;
+            }
+        }
     </style>
+    <script>
+        function handleSortChange() {
+            const sortSelect = document.getElementById('sort-select');
+            const searchInput = document.getElementById('search-input');
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sortSelect.value);
+            if (searchInput.value) {
+                url.searchParams.set('search', searchInput.value);
+            }
+            window.location.href = url.toString();
+        }
+        
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const searchInput = document.getElementById('search-input');
+                const sortSelect = document.getElementById('sort-select');
+                const url = new URL(window.location.href);
+                url.searchParams.set('search', searchInput.value);
+                url.searchParams.set('sort', sortSelect.value);
+                window.location.href = url.toString();
+            }
+        }
+    </script>
 </head>
 <body>
     <header>
         <nav>
-            <a href="{% url 'storefront:index' %}">← Back to Home</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'storefront:cart' %}">Cart</a>
-            {% endif %}
+            <a href="{% url 'storefront:index' %}">Home</a>
+            <a href="{% url 'storefront:category_list' %}">← Back to Categories</a>
         </nav>
     </header>
 
-    <div class="container">
+    <button class="theme-toggle-btn" onclick="toggleChristmasTheme()">🎄 Christmas Mode 🎄</button>
+
+    <div class="container" id="mainContainer">
         <h1>{{ category }} Products</h1>
+        
+        <div class="search-filter-bar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Search products by name..." value="{{ search_query }}" onkeypress="handleSearch(event)">
+            </div>
+            <div class="sort-dropdown">
+                <select id="sort-select" onchange="handleSortChange()">
+                    <option value="recommended" {% if sort_by == 'recommended' %}selected{% endif %}>⭐ Most Recommended</option>
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>🆕 Newest</option>
+                    <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>💰 High to Low</option>
+                    <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>💵 Low to High</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>🔤 By Name</option>
+                </select>
+            </div>
+        </div>
         
         {% if products %}
         <div class="products-grid">
             {% for product in products %}
             <div class="product-card">
                 <a href="{% url 'storefront:product_detail' product.id %}">
+                    {% if product.is_on_sale %}
+                    <div class="product-badge">{{ product.discount_percentage }}% OFF</div>
+                    {% endif %}
                     <div class="product-image">
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -132,10 +327,22 @@
                     </div>
                     <div class="product-info">
                         <div class="product-name">{{ product.name }}</div>
-                        <div class="product-price">${{ product.price }}</div>
-                        {% if product.rating %}
-                        <div class="product-rating">⭐ {{ product.rating }}</div>
+                        {% if product.is_on_sale %}
+                        <div class="product-price">
+                            <span class="product-price-original">SGD ${{ product.original_price }}</span>
+                            <span class="product-price-sale">SGD ${{ product.price }}</span>
+                        </div>
+                        {% else %}
+                        <div class="product-price">SGD ${{ product.price }}</div>
                         {% endif %}
+                        <div class="product-rating-discount">
+                            {% if product.rating %}
+                            <div class="product-rating">⭐ {{ product.rating }}</div>
+                            {% endif %}
+                            {% if product.is_on_sale %}
+                            <div class="product-discount-info">Save {{ product.discount_percentage }}%</div>
+                            {% endif %}
+                        </div>
                     </div>
                 </a>
             </div>
@@ -145,5 +352,38 @@
         <p style="text-align: center; padding: 40px; font-size: 18px;">No products in this category yet.</p>
         {% endif %}
     </div>
+
+    <script>
+        function toggleChristmasTheme() {
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (!container) return;
+            
+            container.classList.toggle('christmas-theme');
+            
+            if (container.classList.contains('christmas-theme')) {
+                localStorage.setItem('christmasTheme', 'enabled');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            } else {
+                localStorage.setItem('christmasTheme', 'disabled');
+                button.textContent = '🎄 Christmas Mode 🎄';
+                button.style.background = 'linear-gradient(135deg, #c0392b, #27ae60)';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('christmasTheme');
+            const container = document.getElementById('mainContainer');
+            const button = document.querySelector('.theme-toggle-btn');
+            
+            if (theme === 'enabled' && container && button) {
+                container.classList.add('christmas-theme');
+                button.textContent = '✨ Regular Mode ✨';
+                button.style.background = 'linear-gradient(135deg, #6c5ce7, #5a49c9)';
+            }
+        });
+    </script>
 </body>
 </html>
