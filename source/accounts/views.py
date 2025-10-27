@@ -75,10 +75,6 @@ def login_view(request):
 
 @login_required
 def profile(request):
-    # Clear any old messages when loading the profile page
-    storage = messages.get_messages(request)
-    storage.used = True
-    
     customer = getattr(request.user, 'customer', None)
     
     # Ensure customer object exists
@@ -106,10 +102,6 @@ def edit_profile(request):
             income_range='Below 30k'
         )
     
-    # Clear any old messages when loading the edit profile page
-    storage = messages.get_messages(request)
-    storage.used = True
-    
     if request.method == 'POST':
         if customer:
             # Update customer profile
@@ -135,6 +127,10 @@ def edit_profile(request):
             messages.error(request, 'Profile not found.')
         
         return redirect('accounts:profile')
+    
+    # Clear any old messages when loading the edit profile page (GET request only)
+    storage = messages.get_messages(request)
+    storage.used = True
     
     return render(request, 'accounts/edit_profile.html', {'customer': customer})
 
