@@ -555,8 +555,18 @@ def favorites(request):
         favorited_by__user=request.user
     ).distinct()
     
+    # Get cart count
+    cart_count = 0
+    try:
+        customer = Customer.objects.get(user=request.user)
+        cart = Cart.objects.get(customer=customer)
+        cart_count = cart.items.count()
+    except:
+        cart_count = 0
+    
     context = {
         'favorite_products': favorite_products,
+        'cart_count': cart_count,
     }
     return render(request, 'storefront/favorites.html', context)
 

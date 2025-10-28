@@ -54,10 +54,28 @@
             transition: all 0.3s ease;
             font-weight: 600;
             display: inline-block;
+            position: relative;
         }
         .nav-links a:hover, .logo:hover {
             background: rgba(102, 126, 234, 0.1);
             transform: translateY(-2px);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -2px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         @media (max-width: 768px) {
             .nav-links {
@@ -239,7 +257,12 @@
             <div class="nav-links">
                 <a href="{% url 'storefront:index' %}">Home</a>
                 <a href="{% url 'storefront:favorites' %}" style="background: rgba(102, 126, 234, 0.1);">Favorites</a>
-                <a href="{% url 'storefront:cart' %}">Cart</a>
+                <a href="{% url 'storefront:cart' %}">
+                    Cart
+                    {% if cart_count > 0 %}
+                    <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
                 <a href="{% url 'accounts:profile' %}">My Profile</a>
                 <a href="{% url 'accounts:logout' %}">Logout</a>
             </div>
