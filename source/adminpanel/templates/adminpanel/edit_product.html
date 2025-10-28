@@ -27,25 +27,29 @@
             <a href="{% url 'storefront:index' %}" class="logo">
                 <img src="{% static 'img/auroramart_logo.png' %}" alt="AuroraMart" style="height:32px"> AuroraMart Admin
             </a>
+            <div class="nav-links">
+                <a href="{% url 'adminpanel:admin_dashboard' %}">Dashboard</a>
+                <a href="{% url 'adminpanel:admin_add_product' %}">Add Product</a>
+                <a href="{% url 'adminpanel:admin_stock' %}">Stock</a>
+                <a href="{% url 'storefront:index' %}">Storefront</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            </div>
         </nav>
     </header>
     <div class="container">
         <div class="card">
             <h2 style="margin:0 0 12px 0; color:#333">Edit Product</h2>
-            <form method="post" class="grid">
+            <form method="post" enctype="multipart/form-data" class="grid">
                 {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form %}
                 <div>
-                    <label>Name</label>
-                    <input type="text" name="name" value="{{ product.name }}" required>
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div style="color:#666; font-size:12px">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div style="color:#e11d48; font-size:12px">{{ error }}</div>{% endfor %}
                 </div>
-                <div>
-                    <label>Price</label>
-                    <input type="number" step="0.01" name="price" value="{{ product.price }}" required>
-                </div>
-                <div>
-                    <label>Stock</label>
-                    <input type="number" name="stock" value="{{ product.stock }}" min="0" required>
-                </div>
+                {% endfor %}
                 <div style="grid-column: 1 / -1" class="actions">
                     <button type="submit" class="btn-primary">Save</button>
                     <a class="btn-primary" style="background:#e5e7eb; color:#333; text-decoration:none;" href="{% url 'adminpanel:admin_dashboard' %}">Cancel</a>

@@ -263,6 +263,9 @@
                     <span class="cart-badge">{{ cart_count }}</span>
                     {% endif %}
                 </a>
+                {% if user.is_staff %}
+                <a href="{% url 'adminpanel:admin_dashboard' %}" style="background:#ef4444; color:white; font-weight:700;">Admin</a>
+                {% endif %}
                 <a href="{% url 'accounts:profile' %}">My Profile</a>
                 <a href="{% url 'accounts:logout' %}">Logout</a>
             </div>
