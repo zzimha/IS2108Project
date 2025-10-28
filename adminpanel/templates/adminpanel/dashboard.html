@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - AuroraMart</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        nav { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+        .logo { color: #667eea; font-weight: 700; font-size: 22px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 16px; }
+        .nav-links a { color: #667eea; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+        .nav-links a.active, .nav-links a:hover { background: rgba(102,126,234,0.1); }
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .card h3 { color: #6c5ce7; font-size: 14px; text-transform: uppercase; margin-bottom: 8px; }
+        .card .value { font-size: 28px; font-weight: 700; color: #333; }
+        .section { margin-top: 24px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        th, td { padding: 12px 14px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #fafafa; color: #666; font-size: 12px; text-transform: uppercase; }
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'storefront:index' %}" class="logo">
+                <img src="{% static 'img/auroramart_logo.png' %}" alt="AuroraMart" style="height:32px"> AuroraMart Admin
+            </a>
+            <div class="nav-links">
+                <a href="{% url 'adminpanel:admin_dashboard' %}" class="active">Dashboard</a>
+                <a href="{% url 'adminpanel:admin_add_product' %}">Add Product</a>
+                <a href="{% url 'adminpanel:admin_stock' %}">Stock</a>
+                <a href="{% url 'storefront:index' %}">Storefront</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="section">
+            <h2 style="margin: 0 0 12px 0; color:#333">Sales Overview</h2>
+            <div class="charts">
+                <div class="card">
+                    <div style="display:flex; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <strong>Revenue Time Series</strong>
+                        <select id="rangeSelect" style="padding:6px 8px; border:1px solid #ddd; border-radius:8px;">
+                            <option value="daily">Daily (30d)</option>
+                            <option value="weekly">Weekly (12w)</option>
+                            <option value="monthly" selected>Monthly (12m)</option>
+                            <option value="yearly">Yearly (5y)</option>
+                        </select>
+                    </div>
+                    <canvas id="salesChart" height="140"></canvas>
+                </div>
+                <div class="card">
+                    <strong>Revenue by Category</strong>
+                    <canvas id="categoryChart" height="140"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 12px;">
+                <h2 style="margin:0; color:#333">Products</h2>
+                <a href="{% url 'adminpanel:admin_add_product' %}" class="btn-primary" style="text-decoration:none;">+ Add Product</a>
+            </div>
+            <div class="card" style="margin-bottom: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                    <input type="text" id="nameFilter" placeholder="Search by name..." style="padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                    <select id="priceFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="">All Prices</option>
+                        <option value="low">Low to High</option>
+                        <option value="high">High to Low</option>
+                    </select>
+                    <select id="stockFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="">All Stock</option>
+                        <option value="low">Low Stock (&lt;10)</option>
+                        <option value="out">Out of Stock</option>
+                        <option value="low-high">Stock: Low to High</option>
+                        <option value="high-low">Stock: High to Low</option>
+                    </select>
+                    <select id="categoryFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <table id="productTable">
+                <tr><th>Name</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+                {% for product in products %}
+                <tr data-name="{{ product.name|lower }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}" data-category="{{ product.category|lower }}">
+                    <td>{{ product.name }}</td>
+                    <td>${{ product.price }}</td>
+                    <td class="stock-cell">{{ product.stock }}</td>
+                    <td>
+                        <a href="{% url 'adminpanel:admin_edit_product' product.id %}">Edit</a> |
+                        <a href="{% url 'adminpanel:admin_delete_product' product.id %}">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center; color:#888">No products found.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const timeseries = {{ sales_timeseries_json|safe }};
+        const pie = {{ category_pie_json|safe }};
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const rangeSelect = document.getElementById('rangeSelect');
+        function buildLineDataset(rangeKey) {
+            const ds = timeseries[rangeKey] || {labels: [], data: []};
+            return {
+                labels: ds.labels,
+                datasets: [{
+                    label: 'Revenue (SGD)'
+                    , data: ds.data
+                    , borderColor: '#6c5ce7'
+                    , backgroundColor: 'rgba(108,92,231,0.15)'
+                    , fill: true
+                    , tension: 0.25
+                }]
+            };
+        }
+        let salesChart = new Chart(ctx, {
+            type: 'line',
+            data: buildLineDataset('monthly'),
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        rangeSelect.addEventListener('change', () => {
+            const cfg = buildLineDataset(rangeSelect.value);
+            salesChart.data.labels = cfg.labels;
+            salesChart.data.datasets = cfg.datasets;
+            salesChart.update();
+        });
+
+        const ctxPie = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: pie.labels,
+                datasets: [{
+                    data: pie.data,
+                    backgroundColor: ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#22c55e','#06b6d4']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+        
+        // Product filtering
+        const rows = Array.from(document.querySelectorAll('#productTable tr')).slice(1);
+        document.getElementById('nameFilter').addEventListener('input', applyFilters);
+        document.getElementById('priceFilter').addEventListener('change', applyFilters);
+        document.getElementById('stockFilter').addEventListener('change', applyFilters);
+        document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+        
+        function applyFilters() {
+            const nameValue = document.getElementById('nameFilter').value.toLowerCase();
+            const priceFilter = document.getElementById('priceFilter').value;
+            const stockFilter = document.getElementById('stockFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+            
+            rows.forEach(row => {
+                if (row.cells.length === 0) return;
+                const name = row.dataset.name || '';
+                const price = parseFloat(row.dataset.price) || 0;
+                const stock = parseInt(row.dataset.stock) || 0;
+                const category = row.dataset.category || '';
+                
+                let visible = true;
+                if (nameValue && !name.includes(nameValue)) visible = false;
+                if (categoryFilter && !category.includes(categoryFilter)) visible = false;
+                
+                if (stockFilter === 'low' && stock >= 10) visible = false;
+                if (stockFilter === 'out' && stock > 0) visible = false;
+                
+                row.style.display = visible ? '' : 'none';
+            });
+            
+            // Sort if needed
+            if (priceFilter || stockFilter.includes('high-low') || stockFilter.includes('low-high')) {
+                const tbody = document.querySelector('#productTable tbody') || document.querySelector('#productTable');
+                const sortedRows = Array.from(rows).sort((a, b) => {
+                    if (priceFilter) {
+                        const aPrice = parseFloat(a.dataset.price) || 0;
+                        const bPrice = parseFloat(b.dataset.price) || 0;
+                        return priceFilter === 'low' ? aPrice - bPrice : bPrice - aPrice;
+                    }
+                    if (stockFilter.includes('high-low')) {
+                        return parseInt(b.dataset.stock || 0) - parseInt(a.dataset.stock || 0);
+                    }
+                    if (stockFilter.includes('low-high')) {
+                        return parseInt(a.dataset.stock || 0) - parseInt(b.dataset.stock || 0);
+                    }
+                    return 0;
+                });
+                sortedRows.forEach(row => tbody.appendChild(row));
+            }
+        }
+    </script>
+</body>
+</html>
+
