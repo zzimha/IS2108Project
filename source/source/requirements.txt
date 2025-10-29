@@ -1,0 +1,9 @@
+Django==5.2.6
+python-decouple==3.8
+joblib==1.4.2
+scikit-learn==1.5.2
+pandas==2.2.3
+numpy==1.26.4
+Pillow==10.2.0
+django-crispy-forms==2.1
+crispy-bootstrap5==2.0.2

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product - AuroraMart Admin</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        nav { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+        .logo { color: #667eea; font-weight: 700; font-size: 22px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        label { font-weight: 600; color: #333; font-size: 14px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; }
+        .actions { display:flex; gap:10px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'storefront:index' %}" class="logo">
+                <img src="{% static 'img/auroramart_logo.png' %}" alt="AuroraMart" style="height:32px"> AuroraMart Admin
+            </a>
+            <div class="nav-links">
+                <a href="{% url 'adminpanel:admin_dashboard' %}">Dashboard</a>
+                <a href="{% url 'adminpanel:admin_add_product' %}">Add Product</a>
+                <a href="{% url 'adminpanel:admin_stock' %}">Stock</a>
+                <a href="{% url 'storefront:index' %}">Storefront</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="card">
+            <h2 style="margin:0 0 12px 0; color:#333">Edit Product</h2>
+            <form method="post" enctype="multipart/form-data" class="grid">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                <div>
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div style="color:#666; font-size:12px">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div style="color:#e11d48; font-size:12px">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+                <div style="grid-column: 1 / -1" class="actions">
+                    <button type="submit" class="btn-primary">Save</button>
+                    <a class="btn-primary" style="background:#e5e7eb; color:#333; text-decoration:none;" href="{% url 'adminpanel:admin_dashboard' %}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
