@@ -55,3 +55,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+# DB
+source/db.sqlite3
+source/db.sqlite3-journal
