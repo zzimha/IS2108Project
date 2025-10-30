@@ -11,6 +11,7 @@ import joblib
 import os
 import json
 from django.conf import settings
+import random
 
 # Load ML models
 decision_tree_model = None
@@ -27,25 +28,44 @@ except Exception as e:
     print(f"Warning: Could not load ML models: {e}")
 
 def index(request):
-    """Home page showing featured products - personalized based on user profile"""
+    """Home page showing featured products - adaptive by user's browsing, with fallbacks"""
     # Clear any old messages when loading the homepage
     storage = messages.get_messages(request)
     storage.used = True
     
-    # Default featured products (Product IDs: 189, 74, 110, 148, 111, 134)
-    default_featured_product_ids = [189, 74, 110, 148, 111, 134]
-    
     featured_products = None
     is_personalized = False
-    
-    # If user is logged in and has profile, show personalized products
-    if request.user.is_authenticated:
+
+    # 1) Adaptive featured products based on user's most-viewed categories (session-based)
+    #    - Consider the top 2-3 most-clicked categories
+    #    - Randomize products within those categories each refresh
+    category_clicks = request.session.get('category_clicks', {})
+    if category_clicks:
+        try:
+            # Sort categories by clicks desc
+            sorted_cats = sorted(category_clicks.items(), key=lambda kv: kv[1], reverse=True)
+            # Determine a threshold group: categories within 80% of top clicks
+            max_clicks = sorted_cats[0][1]
+            frequent_cats = [c for c, n in sorted_cats if n >= 0.8 * max_clicks]
+            # Limit to top 3 frequent categories
+            frequent_cats = frequent_cats[:3]
+
+            # Randomized selection from these categories
+            featured_products = (
+                Product.objects.filter(category__in=frequent_cats, stock__gt=0, image__isnull=False)
+                .exclude(image='')
+                .order_by('?')[:6]
+            )
+            if featured_products:
+                is_personalized = True
+        except Exception:
+            featured_products = None
+
+    # 2) If none from session, try ML personalization as before (if profile available)
+    if not featured_products and request.user.is_authenticated:
         try:
             customer = Customer.objects.get(user=request.user)
-            
-            # Check if customer has required profile data (age and gender)
             if customer.age and customer.gender and customer.gender != 'P':
-                # Map income range to numeric value
                 income_map = {
                     'Below 30k': 1,
                     '30k-60k': 2,
@@ -53,11 +73,7 @@ def index(request):
                     'Above 100k': 3,
                 }
                 income_level = income_map.get(customer.income_range, 2)
-                
-                # Map gender to numeric (0 = Male, 1 = Female)
                 gender_numeric = 1 if customer.gender == 'F' else 0
-                
-                # Predict category using Decision Tree model
                 predicted_category = None
                 if decision_tree_model is not None:
                     try:
@@ -65,23 +81,24 @@ def index(request):
                         predicted_category = decision_tree_model.predict(features)[0]
                     except Exception as e:
                         print(f"Error predicting category: {e}")
-                
-                # If prediction successful, get products from that category
                 if predicted_category:
-                    # Get products from predicted category (only with images)
-                    featured_products = Product.objects.filter(
-                        category__icontains=predicted_category,
-                        stock__gt=0
-                    ).exclude(image='').order_by('-rating')[:6]
-                    
+                    featured_products = (
+                        Product.objects.filter(category__icontains=predicted_category, stock__gt=0, image__isnull=False)
+                        .exclude(image='')
+                        .order_by('?')[:6]
+                    )
                     if featured_products:
                         is_personalized = True
         except Customer.DoesNotExist:
             pass
-    
-    # Fall back to default featured products if no personalized products
+
+    # 3) First-time or no personalization: random high-quality picks (with images)
     if not featured_products:
-        featured_products = Product.objects.filter(id__in=default_featured_product_ids, stock__gt=0)
+        featured_products = (
+            Product.objects.filter(stock__gt=0, image__isnull=False)
+            .exclude(image='')
+            .order_by('?')[:6]
+        )
     
     # Show only 3 categories on home page
     categories = ['Beauty & Personal Care', 'Home & Kitchen', 'Fashion']
@@ -231,6 +248,15 @@ def category_products(request, category_name):
             max_products = limit
             break
     
+    # Record interest for personalization
+    try:
+        clicks = request.session.get('category_clicks', {})
+        clicks[category_name] = clicks.get(category_name, 0) + 1
+        request.session['category_clicks'] = clicks
+        request.session.modified = True
+    except Exception:
+        pass
+
     # Get filter parameters
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', 'recommended')  # default to recommended
@@ -310,6 +336,16 @@ def product_detail(request, product_id):
     storage.used = True
     
     product = get_object_or_404(Product, id=product_id)
+
+    # Record interest for personalization
+    try:
+        clicks = request.session.get('category_clicks', {})
+        if product and product.category:
+            clicks[product.category] = clicks.get(product.category, 0) + 1
+            request.session['category_clicks'] = clicks
+            request.session.modified = True
+    except Exception:
+        pass
     
     # Get "frequently bought together" recommendations using association rules
     recommendations = []
@@ -364,6 +400,9 @@ def add_to_cart(request, product_id):
             cart_item.save()
         
         messages.success(request, f'{product.name} added to cart!')
+        next_page = request.POST.get('next')
+        if next_page == 'checkout':
+            return redirect('storefront:checkout')
         return redirect('storefront:product_detail', product_id=product_id)
     
     return redirect('storefront:index')

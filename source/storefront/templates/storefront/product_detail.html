@@ -330,12 +330,14 @@
                 <h1>{{ product.name }}</h1>
                 {% if product.is_on_sale %}
                 <div class="price-info">
+                    {% if product.original_price %}
                     <div class="price-original">SGD ${{ product.original_price }}</div>
-                    <div class="price-sale">SGD ${{ product.price }}</div>
-                    <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+                    {% endif %}
+                    <div class="price-sale">SGD ${{ product.get_current_price }}</div>
+                    <div class="discount-badge">{{ product.get_discount_percentage }}% OFF</div>
                 </div>
                 {% else %}
-                <div class="price">SGD ${{ product.price }}</div>
+                <div class="price">SGD ${{ product.get_current_price }}</div>
                 {% endif %}
                 {% if product.rating %}
                 <div class="rating">⭐ {{ product.rating }}</div>

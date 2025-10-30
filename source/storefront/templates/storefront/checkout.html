@@ -285,8 +285,16 @@
                 <h3>🌟 You might also like</h3>
                 {% for item in recommendations %}
                 <div class="recommendation-item">
-                    <span>{{ item.name }}</span>
-                    <strong>SGD ${{ item.price }}</strong>
+                    <div>
+                        <div style="font-weight:600; color:#333;">{{ item.name }}</div>
+                        <div style="color:#667eea; font-weight:700;">SGD ${{ item.price }}</div>
+                    </div>
+                    <form method="post" action="{% url 'storefront:add_to_cart' item.id %}" style="display:flex; align-items:center; gap:8px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="checkout">
+                        <input type="number" name="quantity" value="1" min="1" style="width:64px; padding:6px 8px; border:1px solid #ddd; border-radius:6px; font-family:'Poppins', sans-serif;">
+                        <button type="submit" style="background:#27ae60; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:600; cursor:pointer;">Add</button>
+                    </form>
                 </div>
                 {% endfor %}
                 <p style="margin-top: 15px; color: #666; font-size: 14px;">

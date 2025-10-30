@@ -599,7 +599,7 @@
             <div class="product-card">
                 <a href="{% url 'storefront:product_detail' product.id %}">
                         {% if product.is_on_sale %}
-                        <div class="product-badge">{{ product.discount_percentage }}% OFF</div>
+                        <div class="product-badge">{{ product.get_discount_percentage }}% OFF</div>
                         {% endif %}
                         <div class="product-image">
                             {% if product.image %}
@@ -612,18 +612,20 @@
                         <div class="product-name">{{ product.name }}</div>
                         {% if product.is_on_sale %}
                         <div class="product-price">
+                            {% if product.original_price %}
                             <span class="product-price-original">SGD ${{ product.original_price }}</span>
-                            <span class="product-price-sale">SGD ${{ product.price }}</span>
+                            {% endif %}
+                            <span class="product-price-sale">SGD ${{ product.get_current_price }}</span>
                         </div>
                         {% else %}
-                        <div class="product-price">SGD ${{ product.price }}</div>
+                        <div class="product-price">SGD ${{ product.get_current_price }}</div>
                         {% endif %}
                         <div class="product-rating-discount">
                             {% if product.rating %}
                             <div class="product-rating">⭐ {{ product.rating }}</div>
                             {% endif %}
                             {% if product.is_on_sale %}
-                            <div class="product-discount-info">Save {{ product.discount_percentage }}%</div>
+                            <div class="product-discount-info">Save {{ product.get_discount_percentage }}%</div>
                             {% endif %}
                         </div>
                     </div>

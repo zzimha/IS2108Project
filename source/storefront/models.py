@@ -24,15 +24,38 @@ class Product(models.Model):
         return self.name
     
     def get_current_price(self):
-        """Return current price (discounted if on sale)"""
+        """Return current price (discounted if on sale). Prioritize consistent derivation from original_price and discount_percentage when available."""
+        if self.is_on_sale:
+            # If both original and discount% are present, derive sale price
+            if self.original_price and self.discount_percentage:
+                try:
+                    return (self.original_price * (Decimal(100 - int(self.discount_percentage)) / Decimal(100))).quantize(Decimal('0.01'))
+                except Exception:
+                    return self.price
+            # If only original is present, assume stored price is already discounted
+            if self.original_price:
+                return self.price
+            # If only discount% is present, discount the stored price
+            if self.discount_percentage:
+                try:
+                    return (self.price * (Decimal(100 - int(self.discount_percentage)) / Decimal(100))).quantize(Decimal('0.01'))
+                except Exception:
+                    return self.price
         return self.price
     
     def get_discount_percentage(self):
-        """Calculate discount percentage"""
-        if self.is_on_sale and self.original_price:
-            discount = ((self.original_price - self.price) / self.original_price) * 100
-            return int(discount)
-        return self.discount_percentage or 0
+        """Calculate discount percentage consistently."""
+        if not self.is_on_sale:
+            return 0
+        if self.discount_percentage:
+            return int(self.discount_percentage)
+        if self.original_price and self.price:
+            try:
+                discount = ((self.original_price - self.price) / self.original_price) * 100
+                return int(round(discount))
+            except Exception:
+                return 0
+        return 0
 
     class Meta:
         ordering = ['-created_at']
@@ -99,7 +122,7 @@ class CartItem(models.Model):
         return f"{self.product.name} x {self.quantity}"
 
     def get_total(self):
-        return self.product.price * self.quantity
+        return self.product.get_current_price() * self.quantity
 
 
 class Order(models.Model):
